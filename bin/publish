@@ -1,0 +1,34 @@
+#!/usr/bin/env node
+
+var program = require('commander')
+var chalk = require('chalk')
+
+/**
+ * Usage.
+ */
+program.usage('publish')
+
+/**
+ * Help
+ */
+program.on('--help', function () {
+  console.log()
+  console.log('  Examples:')
+  console.log()
+  console.log(chalk.gray('    # publish to the npmjs.org'))
+  console.log(chalk.green('    $ timo publish'))
+  console.log()
+})
+
+function help() {
+  program.parse(process.argv)
+  if(program.args.length < 1) return program.help()
+}
+
+program.command('*').action(function (env) {
+  console.log('deploying "%s"', env);
+});
+
+help()
+
+program.parse(process.argv);

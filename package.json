@@ -1,0 +1,28 @@
+{
+  "name": "timo-cli",
+  "version": "1.0.0",
+  "description": "timo cli for react-timo or more",
+  "preferGlobal": true,
+  "bin": {
+    "timo": "bin/timo",
+    "timo-publish": "bin/publish"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/farzer/timo-cli.git"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "timo",
+    "cli"
+  ],
+  "author": "farzer",
+  "license": "ISC",
+  "dependencies": {
+    "chalk": "^2.1.0",
+    "commander": "^2.11.0",
+    "inquirer": "^3.2.3"
+  }
+}
