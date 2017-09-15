@@ -1,7 +1,12 @@
 #!/usr/bin/env node
 
-var program = require('commander')
-var chalk = require('chalk')
+const program = require('commander')
+const chalk = require('chalk')
+const execa = require('execa')
+const path = require('path')
+const webpack = require('webpack')
+
+const BuildProgress = require('../lib/buildProgress')
 
 /**
  * Usage.
@@ -20,15 +25,36 @@ program.on('--help', function () {
   console.log()
 })
 
-function help() {
-  program.parse(process.argv)
-  if(program.args.length < 1) return program.help()
-}
+program.parse(process.argv)
 
-program.command('*').action(function (env) {
-  console.log('deploying "%s"', env);
-});
+// 获取项目路径
+const absolutePath = execa.shellSync('pwd').stdout
 
-help()
+// webpack config
+// 生成环境配置
+const prodConfigPath = path.join(absolutePath, 'webpack.config.js')
+const prodConfig = require(prodConfigPath)
 
-program.parse(process.argv);
+prodConfig.plugins.push(
+  new BuildProgress()
+)
+
+const compilerProp = webpack(prodConfig)
+
+compilerProp.run(() => {
+  console.log(`\n${chalk.bgGreen.black(' SUCCESS ')} Production Compiled successfully.\n`)
+})
+
+// 压缩config
+const ugConfigPath = path.join(absolutePath, 'webpack.config.min.js')
+const ugConfig = require(ugConfigPath)
+
+ugConfig.plugins.push(
+  new BuildProgress()
+)
+
+const compilerUg = webpack(ugConfig)
+
+compilerUg.run(() => {
+  console.log(`\n${chalk.bgGreen.black(' SUCCESS ')} Uglify Compiled successfully.\n`)
+})
