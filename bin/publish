@@ -27,34 +27,72 @@ program.on('--help', function () {
 
 program.parse(process.argv)
 
+// 1. 切换至master分支
+console.log()
+console.log('  1. Checkout master')
+execa.shellSync('git checkout master')
+
+// 2. 拉取master最新的代码
+console.log()
+console.log('  2. Pull the newest code')
+execa.shellSync('git pull')
+
+// 3. 删除dist
+console.log()
+console.log('  3. Delete ./dist')
+execa.shellSync('rm -rf ./dist')
+
 // 获取项目路径
 const absolutePath = execa.shellSync('pwd').stdout
 
-// webpack config
-// 生成环境配置
-const prodConfigPath = path.join(absolutePath, 'webpack.config.js')
-const prodConfig = require(prodConfigPath)
+const runPropComplier = () => {
+  // 3. 打包代码
+  console.log()
+  console.log('  4. Build Code')
+  // webpack config
+  // 生成环境配置
+  const prodConfigPath = path.join(absolutePath, 'webpack.config.js')
+  const prodConfig = require(prodConfigPath)
 
-prodConfig.plugins.push(
-  new BuildProgress()
-)
+  prodConfig.plugins.push(
+    new BuildProgress()
+  )
 
-const compilerProp = webpack(prodConfig)
+  const compilerProp = webpack(prodConfig)
 
-compilerProp.run(() => {
-  console.log(`\n${chalk.bgGreen.black(' SUCCESS ')} Production Compiled successfully.\n`)
-})
+  compilerProp.run(() => {
+    console.log()
+    console.log(`  ${chalk.bgGreen.black(' SUCCESS ')} Production Compiled successfully.\n`)
+    return Promise.resolve()
+  })
+}
 
-// 压缩config
-const ugConfigPath = path.join(absolutePath, 'webpack.config.min.js')
-const ugConfig = require(ugConfigPath)
+const runUgCompiler = () => {
+  // 4. 打包压缩代码
+  console.log()
+  console.log('  5. Build Uglify Code')
 
-ugConfig.plugins.push(
-  new BuildProgress()
-)
+  // 压缩config
+  const ugConfigPath = path.join(absolutePath, 'webpack.config.min.js')
+  const ugConfig = require(ugConfigPath)
 
-const compilerUg = webpack(ugConfig)
+  ugConfig.plugins.push(
+    new BuildProgress()
+  )
 
-compilerUg.run(() => {
-  console.log(`\n${chalk.bgGreen.black(' SUCCESS ')} Uglify Compiled successfully.\n`)
-})
+  const compilerUg = webpack(ugConfig)
+
+  compilerUg.run(() => {
+    console.log()
+    console.log(`  ${chalk.bgGreen.black(' SUCCESS ')} Uglify Compiled successfully.\n`)
+    return Promise.resolve()
+  })
+}
+
+const runBuild = async () => {
+  await runPropComplier()
+  await runUgCompiler()
+  return Promise.resolve()
+}
+
+runBuild()
