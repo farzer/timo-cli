@@ -12,6 +12,7 @@ const BuildProgress = require('../lib/buildProgress')
  * Usage.
  */
 program.usage('publish')
+  .option('-du, --disable-uglify', 'disabled uglify the code')
 
 /**
  * Help
@@ -26,6 +27,8 @@ program.on('--help', function () {
 })
 
 program.parse(process.argv)
+
+const disableUglify = program.disableUglify || false
 
 // 1. 切换至master分支
 console.log()
@@ -45,26 +48,21 @@ execa.shellSync('rm -rf ./dist')
 // 获取项目路径
 const absolutePath = execa.shellSync('pwd').stdout
 
-const runPropComplier = () => {
-  // 3. 打包代码
+const afterWork = () => {
+  // 6. 更新package version
   console.log()
-  console.log('  4. Build Code')
-  // webpack config
-  // 生成环境配置
-  const prodConfigPath = path.join(absolutePath, 'webpack.config.js')
-  const prodConfig = require(prodConfigPath)
+  console.log('  6. Npm version patch')
+  execa.shellSync('npm version patch')
 
-  prodConfig.plugins.push(
-    new BuildProgress()
-  )
+  // 7. 推到master分支
+  console.log()
+  console.log('  7. git push')
+  execa.shellSync('git push')
 
-  const compilerProp = webpack(prodConfig)
-
-  compilerProp.run(() => {
-    console.log()
-    console.log(`  ${chalk.bgGreen.black(' SUCCESS ')} Production Compiled successfully.\n`)
-    return Promise.resolve()
-  })
+  // 8. 推到master分支
+  console.log()
+  console.log('  8. Publish package')
+  execa.shellSync('npm publish')
 }
 
 const runUgCompiler = () => {
@@ -85,14 +83,35 @@ const runUgCompiler = () => {
   compilerUg.run(() => {
     console.log()
     console.log(`  ${chalk.bgGreen.black(' SUCCESS ')} Uglify Compiled successfully.\n`)
-    return Promise.resolve()
+
+    afterWork()
   })
 }
 
-const runBuild = async () => {
-  await runPropComplier()
-  await runUgCompiler()
-  return Promise.resolve()
+const runBuild = () => {
+  // 3. 打包代码
+  console.log()
+  console.log('  4. Build Code')
+  // webpack config
+  // 生成环境配置
+  const prodConfigPath = path.join(absolutePath, 'webpack.config.js')
+  const prodConfig = require(prodConfigPath)
+
+  prodConfig.plugins.push(
+    new BuildProgress()
+  )
+
+  const compilerProp = webpack(prodConfig)
+
+  compilerProp.run(() => {
+    console.log()
+    console.log(`  ${chalk.bgGreen.black(' SUCCESS ')} Production Compiled successfully.\n`)
+    if (disableUglify) {
+      afterWork()
+    } else {
+      runUgCompiler()
+    }
+  })
 }
 
 runBuild()
