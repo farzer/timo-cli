@@ -3,5 +3,5 @@
 require('commander')
   .version(require('../package').version)
   .usage('<command> [options]')
-  .command('publish', 'publish to the npmjs.org')
+  .command('publish', 'build the code and then publish to the npmjs.org')
   .parse(process.argv)
