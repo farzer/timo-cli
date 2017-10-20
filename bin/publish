@@ -54,7 +54,7 @@ const afterWork = () => {
   // 6. 更新package version
   console.log()
   console.log(`  ${i++}. Npm version patch`)
-  execa.shellSync('npm version patch')
+  execa.shellSync('npm version patch -m ":rocket: Upgrade to %s"')
 
   // 7. 推到master分支
   console.log()
